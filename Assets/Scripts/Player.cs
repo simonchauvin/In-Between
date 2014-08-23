@@ -11,33 +11,35 @@ public class Player : MonoBehaviour
 	private GameObject worldUp;
 	private GameObject worldDown;
 
-	float startTime;
-
 	// Use this for initialization
 	void Start ()
 	{
 		world = GameObject.FindGameObjectWithTag("World");
 		worldUp = GameObject.FindGameObjectWithTag("WorldUp");
 		worldDown = GameObject.FindGameObjectWithTag("WorldDown");
+
+		// Ignore collisions between player and worlds (up and down)
+		Physics.IgnoreLayerCollision(8, 9, true);
 	}
 
 	// Update is called once per frame
 	void Update ()
 	{
-		if (Input.GetMouseButton (0))
+		if (Input.GetMouseButton (0) && !worldUp.GetComponent<World>().unbalanced)
 		{
-			worldUp.transform.position = Vector3.Lerp(worldUp.transform.position, world.transform.position, 0.05f);
-		} else
+			worldUp.transform.position = Vector3.MoveTowards(worldUp.transform.position, world.transform.position, 40.0f * Time.deltaTime);
+		} else if (!worldUp.GetComponent<World>().unbalanced)
 		{
-			worldUp.transform.position = Vector3.Lerp(worldUp.transform.position, WORLD_UP_STARTING_POSITION, 0.05f);
+			worldUp.transform.position = Vector3.MoveTowards(worldUp.transform.position, WORLD_UP_STARTING_POSITION, 40.0f * Time.deltaTime);
 		}
 
-		if (Input.GetMouseButton (1))
+		if (Input.GetMouseButton (1) && !worldDown.GetComponent<World>().unbalanced)
 		{
-			worldDown.transform.position = Vector3.Lerp(worldDown.transform.position, world.transform.position, 0.05f);
-		} else
+			worldDown.transform.position = Vector3.MoveTowards(worldDown.transform.position, world.transform.position, 40.0f * Time.deltaTime);
+		} else if (!worldDown.GetComponent<World>().unbalanced)
 		{
-			worldDown.transform.position = Vector3.Lerp(worldDown.transform.position, WORLD_DOWN_STARTING_POSITION, 0.05f);
+			worldDown.transform.position = Vector3.MoveTowards(worldDown.transform.position, WORLD_DOWN_STARTING_POSITION, 40.0f * Time.deltaTime);
 		}
 	}
+
 }
