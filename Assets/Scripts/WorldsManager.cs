@@ -4,8 +4,10 @@ using System.Collections;
 public class WorldsManager : MonoBehaviour {
 	public Vector3 WORLD_STARTING_POSITION = new Vector3(0.0f, 0.0f, 0.0f);
 	public Vector3 WORLD_UP_STARTING_POSITION = new Vector3(0.0f, 40.0f, 0.0f);
+	public Vector3 WORLD_UP_END_POSITION = new Vector3(0.0f, 5.0f, 0.0f);
 	public Vector3 WORLD_DOWN_STARTING_POSITION = new Vector3(0.0f, -40.0f, 0.0f);
-
+	public Vector3 WORLD_DOWN_END_POSITION = new Vector3(0.0f, -5.0f, 0.0f);
+	
 	public static GameObject[] worlds;
 	public static GameObject[] allMonoliths;
 	private GameObject deathZone;
@@ -31,7 +33,7 @@ public class WorldsManager : MonoBehaviour {
 		// World control
 		if (Input.GetMouseButton (0) && !worlds[1].GetComponent<World>().unbalanced)
 		{
-			worlds[1].transform.position = Vector3.MoveTowards(worlds[1].transform.position, worlds[0].transform.position, 40.0f * Time.deltaTime);
+			worlds[1].transform.position = Vector3.MoveTowards(worlds[1].transform.position, WORLD_UP_END_POSITION, 40.0f * Time.deltaTime);
 		} else if (!worlds[1].GetComponent<World>().unbalanced)
 		{
 			worlds[1].transform.position = Vector3.MoveTowards(worlds[1].transform.position, WORLD_UP_STARTING_POSITION, 40.0f * Time.deltaTime);
@@ -39,7 +41,7 @@ public class WorldsManager : MonoBehaviour {
 		
 		if (Input.GetMouseButton (1) && !worlds[2].GetComponent<World>().unbalanced)
 		{
-			worlds[2].transform.position = Vector3.MoveTowards(worlds[2].transform.position, worlds[0].transform.position, 40.0f * Time.deltaTime);
+			worlds[2].transform.position = Vector3.MoveTowards(worlds[2].transform.position, WORLD_DOWN_END_POSITION, 40.0f * Time.deltaTime);
 		} else if (!worlds[2].GetComponent<World>().unbalanced)
 		{
 			worlds[2].transform.position = Vector3.MoveTowards(worlds[2].transform.position, WORLD_DOWN_STARTING_POSITION, 40.0f * Time.deltaTime);

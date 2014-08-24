@@ -11,7 +11,8 @@ public class Monolith : MonoBehaviour {
 	public Material worldDownMaterial;
 
 	private string currentWorld;
-	private string nextWorld;
+
+	public string nextWorld { get; private set; }
 
 	private bool canTeleport;
 

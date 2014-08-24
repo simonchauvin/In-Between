@@ -33,7 +33,7 @@ public class World : MonoBehaviour {
 	public void addMonolith (GameObject monolith)
 	{
 		monoliths.Add(monolith);
-		if (ground.CompareTag("World"))
+		if (ground.CompareTag("WorldUp") || ground.CompareTag("WorldDown"))
 		{
 			monolith.transform.parent = transform;
 		}
@@ -42,7 +42,7 @@ public class World : MonoBehaviour {
 	public void removeMonolith (GameObject monolith)
 	{
 		monoliths.Remove(monolith);
-		if (ground.CompareTag("World"))
+		if (ground.CompareTag("WorldUp") || ground.CompareTag("WorldDown"))
 		{
 			monolith.transform.parent = null;
 		}
