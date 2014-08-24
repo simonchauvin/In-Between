@@ -13,16 +13,21 @@ public class Player : MonoBehaviour
 	// GUI
 	private GameObject titleLabel;
 	private GameObject endTitleLabel;
+	private GameObject lostTitleLabel;
+	private GameObject retryLabel;
 	private GameObject worldSyncLabel;
+	private GameObject syncConfirmLabel;
 	private GameObject tutoSwitchBetweenWorldsLabel;
 	private GameObject tutoConnectLabel;
 	private GameObject tutoSyncLabel;
 	private GameObject tutoUnbalancedWorldsLabel;
-	private GameObject tutoUnificationLabel;
 	private bool tutoSwitchAlreadyDisplayed;
+	private bool tutoConnectAlreadyDisplayed;
 	private bool tutoSyncAlreadyDisplayed;
 	private float timeTitleDisplayed;
-
+	private float timeBeforeHidingConfirmLabel;
+	// When two monoliths are confirmed to be synced
+	public bool syncConfirmed { get; set; }
 	// Use this for initialization
 	void Start ()
 	{
@@ -34,22 +39,29 @@ public class Player : MonoBehaviour
 		// GUI texts
 		titleLabel = GameObject.Find("TitleLabel");
 		endTitleLabel = GameObject.Find("EndTitleLabel");
+		lostTitleLabel = GameObject.Find("LostTitleLabel");
+		retryLabel = GameObject.Find("RetryLabel");
 		worldSyncLabel = GameObject.Find("WorldSyncLabel");
+		syncConfirmLabel = GameObject.Find("SyncConfirmLabel");
 		tutoSwitchBetweenWorldsLabel = GameObject.Find("TutoSwitchBetweenWorldsLabel");
 		tutoSyncLabel = GameObject.Find("TutoSyncLabel");
 		tutoConnectLabel = GameObject.Find("TutoConnectLabel");
 		tutoUnbalancedWorldsLabel = GameObject.Find("TutoUnbalancedWorldsLabel");
-		tutoUnificationLabel = GameObject.Find("TutoUnificationLabel");
 		// GUI init
 		endTitleLabel.SetActive(false);
+		lostTitleLabel.SetActive(false);
+		retryLabel.SetActive(false);
 		worldSyncLabel.SetActive(false);
-		tutoSwitchBetweenWorldsLabel.SetActive (false);
+		syncConfirmLabel.SetActive(false);
+		tutoSwitchBetweenWorldsLabel.SetActive(false);
 		tutoConnectLabel.SetActive(false);
 		tutoSyncLabel.SetActive(false);
 		tutoUnbalancedWorldsLabel.SetActive(false);
-		tutoUnificationLabel.SetActive(false);
-		tutoSwitchAlreadyDisplayed = false;
+		tutoSwitchAlreadyDisplayed = true;
+		tutoConnectAlreadyDisplayed = false;
 		tutoSyncAlreadyDisplayed = false;
+
+		timeBeforeHidingConfirmLabel = 0.0f;
 
 		// Ignore collisions between player and worlds (up and down)
 		Physics.IgnoreLayerCollision(8, 9, true);
@@ -63,40 +75,74 @@ public class Player : MonoBehaviour
 	void Update ()
 	{
 		// Title display
-		if (timeTitleDisplayed > TIME_TO_DISPLAY_TITLE)
+		if (titleLabel.activeSelf)
 		{
-			StartCoroutine("fadeTitle");
-		} else {
-			timeTitleDisplayed += Time.deltaTime;
+			if (timeTitleDisplayed > TIME_TO_DISPLAY_TITLE)
+			{
+				StartCoroutine("fadeTitle");
+			} else {
+				timeTitleDisplayed += Time.deltaTime;
+			}
 		}
-		if (Input.GetButton("Use"))
+
+		// Rotate the world up as the player rotates
+		if (Input.GetButton("Use1"))
 		{
-			// Rotate the world up as the player rotates
 			worldUp.transform.Rotate(0.0f, 2, 0.0f);
-			// Rotate the world down as the player rotates
-			worldDown.transform.Rotate(0.0f, -2, 0.0f);
 
 			worldSyncLabel.SetActive(true);
 			if (tutoSyncLabel.activeSelf)
 			{
 				tutoSyncAlreadyDisplayed = true;
 			}
-		} else {
+		}
+
+		// Rotate the world down as the player rotates
+		if (Input.GetButton("Use2"))
+		{
+			worldDown.transform.Rotate(0.0f, -2, 0.0f);
+			
+			worldSyncLabel.SetActive(true);
+			if (tutoSyncLabel.activeSelf)
+			{
+				tutoSyncAlreadyDisplayed = true;
+			}
+		}
+
+		// If not synchronizing hide label
+		if (!Input.GetButton("Use1") && !Input.GetButton("Use2"))
+		{
 			worldSyncLabel.SetActive(false);
 		}
 
-		// Display tuto for switching between worlds
+		// Display tuto for switching monoliths colors
 		if (!tutoSwitchAlreadyDisplayed)
 		{
-			tutoSwitchBetweenWorldsLabel.SetActive(true);
-			foreach (GameObject monolith in world.GetComponent<World>().monoliths)
+			if (world.GetComponent<World>().monoliths.Count == WorldsManager.allMonoliths.Length)
 			{
-				if (!monolith.GetComponent<Monolith>().nextWorld.Equals("world"))
+				tutoSwitchBetweenWorldsLabel.SetActive(true);
+				foreach (GameObject monolith in world.GetComponent<World>().monoliths)
 				{
-					tutoSwitchAlreadyDisplayed = true;
-					tutoSwitchBetweenWorldsLabel.SetActive(false);
+					if (!monolith.GetComponent<Monolith>().nextWorld.Equals("world"))
+					{
+						tutoSwitchAlreadyDisplayed = true;
+						tutoSwitchBetweenWorldsLabel.SetActive(false);
+					}
 				}
 			}
+
+			// Show connect tuto
+			if (!tutoConnectAlreadyDisplayed && !tutoSwitchBetweenWorldsLabel.activeSelf)
+			{
+				tutoConnectLabel.SetActive(true);
+			}
+		}
+
+		// Hide tuto for connecting monoliths to other worlds
+		if (world.GetComponent<World>().monoliths.Count < WorldsManager.allMonoliths.Length)
+		{
+			tutoConnectLabel.SetActive(false);
+			tutoConnectAlreadyDisplayed = true;
 		}
 
 		// Display tuto for syncing worlds
@@ -109,16 +155,65 @@ public class Player : MonoBehaviour
 		}
 
 		// Display unbalance alert
-		if (worldUp.GetComponent<World>().unbalanced || worldUp.GetComponent<World>().unbalanced)
+		if (worldUp.GetComponent<World>().unbalanced || worldDown.GetComponent<World>().unbalanced)
 		{
-			Debug.Log("lkshdfkjsdhfk ");
 			tutoUnbalancedWorldsLabel.SetActive(true);
 		} else
 		{
 			tutoUnbalancedWorldsLabel.SetActive(false);
 		}
-	}
 
+		// Show partial sync conformation alert
+		if (syncConfirmed && !syncConfirmLabel.activeSelf)
+		{
+			syncConfirmLabel.SetActive(true);
+			syncConfirmed = false;
+		}
+
+		// Time before hiding the partial sync confirmation alert
+		if (syncConfirmLabel.activeSelf)
+		{
+			if (timeBeforeHidingConfirmLabel > 2.0f)
+			{
+				timeBeforeHidingConfirmLabel = 0.0f;
+				syncConfirmLabel.SetActive(false);
+			} else {
+				timeBeforeHidingConfirmLabel += Time.deltaTime;
+			}
+		}
+
+		// World final synchronization: win the game
+		if (world.GetComponent<World>().monoliths.Count == WorldsManager.allMonoliths.Length)
+		{
+			bool areWorldsSynchronized = true;
+			foreach (GameObject monolith in world.GetComponent<World>().monoliths)
+			{
+				if (!monolith.GetComponent<Monolith>().synchronized)
+				{
+					areWorldsSynchronized = false;
+				}
+			}
+			if (areWorldsSynchronized)
+			{
+				endTitleLabel.SetActive(true);
+				retryLabel.SetActive(true);
+			}
+		}
+
+		// Replay
+		if (endTitleLabel.activeSelf && Input.GetKeyDown(KeyCode.Return))
+		{
+			Application.LoadLevel ("Game");
+		}
+
+		// Game over if a world is beyond synchronization
+		/*if (worldUp.GetComponent<World>().unbalanced && worldUp || (worldDown.GetComponent<World>().unbalanced && worldDown.getComponent<World>().monoliths.Count > WorldsManager.allMonoliths.length - 1))
+		{
+			// TODO
+		}*/
+		
+	}
+	
 	IEnumerator fadeTitle ()
 	{
 		for (float i = 1.0f; i >= 0.0f; i = i - 0.005f)
@@ -126,5 +221,7 @@ public class Player : MonoBehaviour
 			titleLabel.guiText.material.color = new Color(titleLabel.guiText.material.color.r, titleLabel.guiText.material.color.g, titleLabel.guiText.material.color.b, i);
 			yield return new WaitForSeconds(0.0000000001f);
 		}
+		titleLabel.SetActive(false);
+		tutoSwitchAlreadyDisplayed = false;
 	}
 }

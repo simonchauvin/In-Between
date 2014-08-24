@@ -24,9 +24,29 @@ public class World : MonoBehaviour {
 			float yPosition = ground.transform.position.y;
 			if (ground.CompareTag("WorldUp"))
 			{
-				yPosition = ground.transform.position.y;
+				yPosition = ground.transform.position.y - 5f;
+			} else if (ground.CompareTag("WorldDown"))
+			{
+				yPosition = ground.transform.position.y + 5f;
 			}
 			monolith.transform.position = new Vector3(monolith.transform.position.x, yPosition, monolith.transform.position.z);
+		}
+
+		// Augmment transparency as the world is coming together
+		int syncedMonoliths = 0;
+		foreach (GameObject monolith in WorldsManager.allMonoliths)
+		{
+			if (monolith.GetComponent<Monolith>().synchronized)
+			{
+				syncedMonoliths++;
+			}
+		}
+		if (CompareTag("World"))
+		{
+			renderer.material.color = new Color(renderer.material.color.r, renderer.material.color.g, renderer.material.color.b, 0.6f + ((float)syncedMonoliths / WorldsManager.allMonoliths.Length) * 0.4f);
+		} else
+		{
+			renderer.material.color = new Color(renderer.material.color.r, renderer.material.color.g, renderer.material.color.b, 0.8f - ((float)syncedMonoliths / WorldsManager.allMonoliths.Length) * 0.8f);
 		}
 	}
 

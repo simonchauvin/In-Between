@@ -5,7 +5,9 @@ public class Monolith : MonoBehaviour {
 	public const string WORLD = "world";
 	public const string WORLD_UP = "worldUp";
 	public const string WORLD_DOWN = "worldDown";
-	
+
+	private GameObject player;
+
 	public Material worldMaterial;
 	public Material worldUpMaterial;
 	public Material worldDownMaterial;
@@ -15,18 +17,27 @@ public class Monolith : MonoBehaviour {
 	public string nextWorld { get; private set; }
 
 	private bool canTeleport;
+	public  bool synchronized { get; set; }
+
+	// GUI
+
 
 	// Use this for initialization
 	void Start () {
 		currentWorld = WORLD;
 		nextWorld = WORLD;
 
+		player = GameObject.FindGameObjectWithTag("Player");
+
 		canTeleport = false;
+		synchronized = false;
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	
+
+
+
 	}
 
 	void OnTriggerExit (Collider other)
@@ -40,11 +51,41 @@ public class Monolith : MonoBehaviour {
 
 	void OnTriggerEnter (Collider other)
 	{
-		// Cross fade between world colors
-		if (other.CompareTag("Player"))
+		// Synchronize monoliths from different worlds
+		if (other.CompareTag("Monolith"))
 		{
-			StartCoroutine("crossFade");
+			if (!other.GetComponent<Monolith>().currentWorld.Equals(currentWorld) && !other.GetComponent<Monolith>().currentWorld.Equals(WORLD) 
+			    && !currentWorld.Equals(WORLD) && !other.GetComponent<Monolith>().synchronized && !synchronized)
+			{
+				synchronized = true;
+				other.GetComponent<Monolith>().synchronized = true;
+				renderer.material = worldMaterial;
+				other.renderer.material = worldMaterial;
+				if (currentWorld.Equals(WORLD_UP))
+				{
+					WorldsManager.worlds[1].GetComponent<World>().removeMonolith(gameObject);
+				} else if (currentWorld.Equals(WORLD_DOWN))
+				{
+					WorldsManager.worlds[2].GetComponent<World>().removeMonolith(gameObject);
+				}
+				if (other.GetComponent<Monolith>().currentWorld.Equals(WORLD_UP))
+				{
+					WorldsManager.worlds[1].GetComponent<World>().removeMonolith(other.gameObject);
+				} else if (other.GetComponent<Monolith>().currentWorld.Equals(WORLD_DOWN))
+				{
+					WorldsManager.worlds[2].GetComponent<World>().removeMonolith(other.gameObject);
+				}
+				WorldsManager.worlds[0].GetComponent<World>().addMonolith(gameObject);
+				WorldsManager.worlds[0].GetComponent<World>().addMonolith(other.gameObject);
+				player.GetComponent<Player>().syncConfirmed = true;
+			}
+		}
+
+		// Cross fade between world colors
+		if (other.CompareTag("Player") && !synchronized)
+		{
 			canTeleport = true;
+			StartCoroutine("crossFade");
 		}
 
 		// Monolith transportation to world
@@ -117,16 +158,17 @@ public class Monolith : MonoBehaviour {
 		}
 		// Fade out
 		Color currentColor = renderer.material.color;
-		for (float i = renderer.material.color.a; i >= 0.0f; i = i - 0.02f)
+		for (float i = renderer.material.color.a; i >= 0.0f; i = i - 0.1f)
 		{
 			renderer.material.color = new Color(currentColor.r, currentColor.g, currentColor.b, i);
 			yield return new WaitForSeconds(0.00000001f);
 		}
+
 		// Material change
 		renderer.material = newMaterial;
 		// Fade in
 		currentColor = renderer.material.color;
-		for (float i = 0.0f; i <= 1.0f; i = i + 0.02f)
+		for (float i = 0.0f; i <= 1.0f; i = i + 0.1f)
 		{
 			renderer.material.color = new Color(currentColor.r, currentColor.g, currentColor.b, i);
 			yield return new WaitForSeconds(0.00000001f);
