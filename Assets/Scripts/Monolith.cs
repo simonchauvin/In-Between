@@ -68,6 +68,8 @@ public class Monolith : MonoBehaviour {
 				if (currentWorld.Equals(WORLD))
 				{
 					WorldsManager.worlds[0].GetComponent<World>().removeMonolith(gameObject);
+					// Stop monolith rotation with world
+
 				} else if (currentWorld.Equals(WORLD_DOWN))
 				{
 					WorldsManager.worlds[2].GetComponent<World>().removeMonolith(gameObject);
@@ -83,6 +85,8 @@ public class Monolith : MonoBehaviour {
 				if (currentWorld.Equals(WORLD))
 				{
 					WorldsManager.worlds[0].GetComponent<World>().removeMonolith(gameObject);
+					// Stop monolith rotation with world
+
 				} else if (currentWorld.Equals(WORLD_UP))
 				{
 					WorldsManager.worlds[1].GetComponent<World>().removeMonolith(gameObject);
