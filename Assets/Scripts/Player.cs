@@ -102,7 +102,10 @@ public class Player : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
 	{
-		// TODO augment pitch when getting close to the world
+		if (Input.GetKeyDown(KeyCode.F))
+		{
+			Screen.SetResolution( Screen.currentResolution.width, Screen.currentResolution.height, true );
+		}
 
 		// World control
 		if (Input.GetMouseButton (0) && !worldUp.GetComponent<World>().unbalanced)
