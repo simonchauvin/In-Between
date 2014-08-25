@@ -19,8 +19,9 @@ public class Monolith : MonoBehaviour {
 	private bool canTeleport;
 	public  bool synchronized { get; set; }
 
-	// GUI
-
+	// Audio
+	private AudioSource switchWorlds;
+	private AudioSource synchronization;
 
 	// Use this for initialization
 	void Start () {
@@ -31,12 +32,13 @@ public class Monolith : MonoBehaviour {
 
 		canTeleport = false;
 		synchronized = false;
+
+		switchWorlds = GetComponents<AudioSource>()[0];
+		synchronization = GetComponents<AudioSource>()[1];
 	}
 	
 	// Update is called once per frame
 	void Update () {
-
-
 
 	}
 
@@ -78,6 +80,11 @@ public class Monolith : MonoBehaviour {
 				WorldsManager.worlds[0].GetComponent<World>().addMonolith(gameObject);
 				WorldsManager.worlds[0].GetComponent<World>().addMonolith(other.gameObject);
 				player.GetComponent<Player>().syncConfirmed = true;
+
+				if (!synchronization.isPlaying)
+				{
+					synchronization.Play();
+				}
 			}
 		}
 
@@ -86,6 +93,10 @@ public class Monolith : MonoBehaviour {
 		{
 			canTeleport = true;
 			StartCoroutine("crossFade");
+			if (!switchWorlds.isPlaying)
+			{
+				switchWorlds.Play();
+			}
 		}
 
 		// Monolith transportation to world
