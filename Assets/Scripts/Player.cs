@@ -327,7 +327,15 @@ public class Player : MonoBehaviour
 		{
 			// TODO game over
 		}*/
-		
+
+		Screen.lockCursor = true;
+
+		if (Input.GetKeyDown("escape"))
+			Screen.lockCursor = false;
+	}
+
+	void OnMouseDown() {
+		Screen.lockCursor = true;
 	}
 	
 	IEnumerator fadeTitle ()
